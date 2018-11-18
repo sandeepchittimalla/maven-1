@@ -18,28 +18,37 @@ package org.apache.maven.model.building;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import java.io.File;
 import junit.framework.TestCase;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
+import org.apache.commons.lang3.SystemUtils;
+import static org.junit.Assume.assumeTrue;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  *
  * @author fabiano
  */
-public class FileModelSourceTest 
-    extends TestCase 
+public class FileModelSourceTest
 {
-    
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
     public FileModelSourceTest() {
     }
 
     /**
      * Test of equals method, of class FileModelSource.
      */
-    public void testEquals() 
+    @Test
+    public void testEquals()
             throws Exception 
     {
-        File tempFile = File.createTempFile("pomTest-", ".xml");
+        File tempFile = File.createTempFile( "pomTest-", ".xml" );
         tempFile.deleteOnExit();
         FileModelSource instance = new FileModelSource( tempFile );
 
@@ -47,6 +56,22 @@ public class FileModelSourceTest
         assertFalse( instance.equals( new Object() ) );
         assertTrue( instance.equals( instance ) );
         assertTrue( instance.equals( new FileModelSource( tempFile ) ) );
+    }
+
+    @Test
+    public void testWindowsPaths() 
+            throws Exception 
+    {
+        assumeTrue( SystemUtils.IS_OS_WINDOWS );
+
+        File upperCaseFolder = folder.newFolder( "TESTE" );
+        String absolutePath = upperCaseFolder.getAbsolutePath();
+        File lowerCaseFolder = new File( absolutePath.toLowerCase() );
+        
+        FileModelSource upperCaseFolderSouce = new FileModelSource( upperCaseFolder );
+        FileModelSource lowerCaseFolderSouce = new FileModelSource( lowerCaseFolder );
+
+        assertTrue( upperCaseFolderSouce.equals( lowerCaseFolderSouce ) );        
     }
 
 }
